@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Instructor Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 40px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    #chart-container {
+      max-width: 400px;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Instructor Dashboard</h1>
+
+  <h2>Student Feedback</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Student ID</th>
+        <th>Student Name</th>
+        <th>Course ID</th>
+        <th>Course Title</th>
+        <th>Comment</th>
+        <th>Date</th>
+        <th>Sentiment Label</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for feedback in feedback_data %}
+      <tr>
+        <td>{{ feedback.student_id }}</td>
+        <td>{{ feedback.student_name }}</td>
+        <td>{{ feedback.course_id }}</td>
+        <td>{{ feedback.course_title }}</td>
+        <td>{{ feedback.comment }}</td>
+        <td>{{ feedback.date }}</td>
+        <td>{{ feedback.sentiment_label }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Sentiment Distribution</h2>
+  <div id="chart-container">
+    <canvas id="sentimentChart"></canvas>
+  </div>
+
+  <script>
+    const chartData = {{ chart_data | tojson }};
+    
+    const sentimentCounts = {
+      Positive: 0,
+      Neutral: 0,
+      Negative: 0
+    };
+
+    chartData.forEach(item => {
+      if (sentimentCounts.hasOwnProperty(item.sentiment_label)) {
+        sentimentCounts[item.sentiment_label] += item.count;
+      }
+    });
+
+    const ctx = document.getElementById('sentimentChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['Positive', 'Neutral', 'Negative'],
+        datasets: [{
+          data: [
+            sentimentCounts['Positive'],
+            sentimentCounts['Neutral'],
+            sentimentCounts['Negative']
+          ],
+          backgroundColor: [
+            'rgba(40, 167, 69, 0.7)',    // Green
+            'rgba(253, 126, 20, 0.7)',   // Orange
+            'rgba(220, 53, 69, 0.7)'     // Red
+          ],
+          borderColor: [
+            'rgba(40, 167, 69, 1)',
+            'rgba(253, 126, 20, 1)',
+            'rgba(220, 53, 69, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          },
+          title: {
+            display: true,
+            text: 'Feedback Sentiment Distribution'
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
